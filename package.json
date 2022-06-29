@@ -1,12 +1,16 @@
 {
   "name": "gridhub",
   "private": true,
+  "bin": {
+    "gh-run": "src/build/run.mjs",
+    "gh-preprocess": "src/build/preprocess.mjs"
+  },
   "scripts": {
-    "build": "src/build/run.mjs build",
-    "links:internal": "src/build/check-links.mjs",
+    "build": "node src/build/run.mjs build",
+    "links:internal": "node src/build/check-links.mjs",
     "serve": "http-server ./dist/",
-    "develop": "src/build/run.mjs develop",
-    "preprocess": "src/build/preprocess.mjs preprocess",
+    "develop": "node src/build/run.mjs develop",
+    "preprocess": "node src/build/preprocess.mjs preprocess",
     "format": "prettier --write '*.js' 'cypress/**/*.js' 'src/**/{*.js,*.mjs,*.scss,*.vue}' '!src/.temp/**'",
     "format:check": "prettier --check '*.js' 'cypress/**/*.js' 'src/**/{*.js,*.mjs,*.scss,*.vue}' '!src/.temp/**'",
     "markdown:lint": "markdownlint 'content/**/*.md'",
@@ -29,6 +33,7 @@
     "bootstrap": "<5.0",
     "bootstrap-vue": "^2.21.2",
     "commander": "^8.2.0",
+    "cross-spawn": "^7.0.3",
     "dayjs": "^1.10.7",
     "gridsome": "^0.7.0",
     "gridsome-plugin-feed": "^1.0.2",

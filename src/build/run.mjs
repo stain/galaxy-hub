@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import nodePath from "path";
 import process from "process";
-import childProcess from "child_process";
 import { fileURLToPath } from "url";
 import which from "which";
 import cpy from "cpy";
@@ -12,6 +11,7 @@ import { CONTENT_TYPES } from "./partition-content.mjs";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const CONFIG = require("../../config.json");
+const spawn = require('cross-spawn');
 
 const SCRIPT_DIR = nodePath.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = nodePath.dirname(nodePath.dirname(SCRIPT_DIR));
@@ -26,7 +26,8 @@ const DEFAULT_PLACERS = {
      * overwritten. That is, your original Markdown files in the content directory could get screwed
      * up. So just to be safe, never default to symlinks for Markdown files.
      */
-    build: { md: "copy", vue: "copy", insert: "copy", resource: "link" },
+    // TODO: go back to linking on non-windows platforms
+    build: { md: "copy", vue: "copy", insert: "copy", resource: "copy" },
     /* The development server's hot reloader doesn't deal well with links. When the target of a link
      * has been edited, it notices and does some work, but ultimately doesn't recompile the page.
      * Even worse, if a link is ever broken, it crashes. Copying everything takes a lot more disk
@@ -55,7 +56,7 @@ function main(rawArgv) {
     let args = setPlacerArgs(rawArgs, DEFAULT_PLACERS[command]);
     let cmd1 = exe + " " + args.join(" ");
     console.log(`$ ${cmd1}`);
-    let { status: code, signal } = childProcess.spawnSync(exe, args, { stdio: "inherit" });
+    let { status: code, signal } = spawn.sync(exe, args, { stdio: "inherit" });
     if (code) {
         console.error(`${cmd1} exited with code ${code}`);
     }
@@ -74,14 +75,14 @@ function main(rawArgv) {
         let args = setPlacerArgs(rawArgs, DEFAULT_PLACERS[command]);
         cmd2 = exe + " " + args.join(" ");
         console.log(`$ ${cmd2} &`);
-        watcher = childProcess.spawn(exe, args, { stdio: "inherit" });
+        watcher = spawn(exe, args, { stdio: "inherit" });
     }
 
     // Start Gridsome.
     let gridsomeExe = findGridsome();
     let cmd3 = `${gridsomeExe} ${command}`;
     console.log(`$ ${cmd3}`);
-    let gridsome = childProcess.spawn(gridsomeExe, [command], { stdio: "inherit" });
+    let gridsome = spawn(gridsomeExe, [command], { stdio: "inherit" });
     gridsome.on("exit", (code, signal) => {
         // Copy static images for direct reference to dist -- only when doing a full build.
         // We hook into the exit this way to let Gridsome do its thing first.
